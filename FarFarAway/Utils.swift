@@ -11,17 +11,15 @@ import QuartzCore
 
 // MARK: Physics
 
-//struct PhysicsCategory {
-//
-//    static let None    : UInt32 = 0
-//    static let All     : UInt32 = UInt32.max
-//
-//    static let Enemy   : UInt32 = 0b0001
-//    static let Bullet  : UInt32 = 0b0010
-//    static let Rocket  : UInt32 = 0b0100
-//
-//    static let Hero    : UInt32 = 0b1000
-//}
+enum PhysicsCategory: UInt32 {
+
+    case None   = 0
+
+    case Hero   = 0b0001
+    case Enemy  = 0b0010
+    case Bullet = 0b0100
+    case Rocket = 0b1000
+}
 
 // MARK: Vector math
 

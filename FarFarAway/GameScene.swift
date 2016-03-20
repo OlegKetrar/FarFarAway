@@ -8,16 +8,6 @@
 
 import SpriteKit
 
-enum PhysicsCategory: UInt32 /*, RawRepresentable */ {
-
-    case None   = 0
-
-    case Hero   = 0b0001
-    case Enemy  = 0b0010
-    case Bullet = 0b0100
-    case Rocket = 0b1000
-}
-
 class GameScene: SKScene, SKPhysicsContactDelegate {
 
     // MARK: Init
@@ -40,21 +30,40 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         backgroundColor = UIColor.whiteColor()
 
         let someLabel = SKLabelNode(fontNamed: "Chalkduster")
-        someLabel.fontSize  = 20
+        someLabel.text = "score: \(score)"
+        someLabel.fontSize  = 15
         someLabel.fontColor = labelColor
-        someLabel.position  = CGPoint(x: someLabel.frame.width/2 + 20, y: someLabel.frame.height/2 + 20)
+        someLabel.position  = CGPoint(x: someLabel.frame.width/2 + 20, y: size.height - someLabel.frame.height/2 - 20)
 
         addChild(someLabel)
         scoreLabel = someLabel
 
         let someLevelLabel = SKLabelNode(fontNamed: "Chalkduster")
-        someLevelLabel.fontSize  = 20
+        someLevelLabel.text      = "level: \(level)"
+        someLevelLabel.fontSize  = 15
         someLevelLabel.fontColor = labelColor
-        someLevelLabel.position  = CGPoint(x: size.width - someLevelLabel.frame.width/2 + 20,
-            y: size.height - someLevelLabel.frame.height/2 + 20)
+        someLevelLabel.position  = CGPoint(x: size.width - someLevelLabel.frame.width/2 - 20,
+            y: size.height - someLevelLabel.frame.height/2 - 20)
 
         addChild(someLevelLabel)
         levelLabel = someLevelLabel
+
+        // add control buttons
+        let someLeftButton = SKLabelNode(fontNamed: "Chalkduster")
+        someLeftButton.text = "Left"
+        someLeftButton.fontColor = labelColor
+        someLeftButton.fontSize  = 20.0
+        someLeftButton.position = CGPoint(x: someLeftButton.frame.width/2 + 30, y: 50)
+
+        addChild(someLeftButton)
+
+        let someRightButton = SKLabelNode(fontNamed: "Chalkduster")
+        someRightButton.text = "Right"
+        someRightButton.fontColor = labelColor
+        someRightButton.fontSize  = 20.0
+        someRightButton.position = CGPoint(x: size.width - someLeftButton.frame.width/2 - 30, y: 50)
+
+        addChild(someRightButton)
 
         // set animable texture
         let playerAnimatedAtlas = SKTextureAtlas(named: "PlayerAnimation")
@@ -109,7 +118,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         runAction(SKAction.repeatActionForever(
             SKAction.sequence([
                 SKAction.runBlock(actionShot),
-                SKAction.waitForDuration(0.2)
+                SKAction.waitForDuration(0.1)
                 ])
             ))
     }
@@ -117,10 +126,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     func updateEnemyAction() {
 
         let doubleLevel = NSTimeInterval(level)
-        var duration = (0.2 * doubleLevel + 1.0) / doubleLevel
+        var duration = (0.1 * doubleLevel + 5.0) / (5 * doubleLevel)
 
-        if duration < 0.3 {
-            duration = 0.3
+        if duration < 0.1 {
+            duration = 0.1
         }
 
         runAction(SKAction.repeatActionForever(
@@ -142,17 +151,109 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var level: Int = 1
 
     // MARK: Input
+
+    var moveLeft:  Bool = false
+    var moveRight: Bool = false
+
+    var leftOff:  Bool = false
+    var rightOff: Bool = false
+
+    var leftRect: CGRect {
+        return CGRect(x: 0, y: 0, width: size.width/2 - 50, height: 100)
+    }
+
+    var rightRect: CGRect {
+        return CGRect(x: size.width/2 + 50, y: 0, width: size.width/2 - 50, height: 100)
+    }
     
     override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
 
+        for touch in touches {
+
+            let location = touch.locationInNode(self)
+
+            if leftRect.contains(location) {
+                moveLeft = true
+
+                if moveRight {
+                    moveRight = false
+                    rightOff  = true
+                }
+            }
+
+            if rightRect.contains(location) {
+                moveRight = true
+
+                if moveLeft {
+                    moveLeft = false
+                    leftOff  = true
+                }
+            }
+        }
     }
 
     override func touchesEnded(touches: Set<UITouch>, withEvent event: UIEvent?) {
 
+        for touch in touches {
+
+            let location = touch.locationInNode(self)
+
+            if leftRect.contains(location) {
+                moveLeft = false
+                leftOff  = false
+
+                if rightOff {
+                    moveRight = true
+                }
+            }
+
+            if rightRect.contains(location) {
+                moveRight = false
+                rightOff  = false
+
+                if leftOff {
+                    moveLeft = true
+                }
+            }
+        }
+    }
+
+    let dx: CGFloat = 5.0
+
+    func updateMoving() {
+
+        if moveLeft && moveRight {
+            return
+        }
+
+        var offsetX: CGFloat = 0
+
+        if moveLeft {
+            offsetX -= dx
+        }
+
+        if moveRight {
+            offsetX += dx
+        }
+
+        var playerPosition = playerShip.position
+        playerPosition.x += offsetX
+
+        let minX = playerShip.size.width / 2 + 10
+        let maxX = size.width - playerShip.size.width / 2 - 10
+
+        if playerPosition.x < minX {
+            playerPosition.x = minX
+        }
+        else if playerPosition.x > maxX {
+            playerPosition.x = maxX
+        }
+        
+        playerShip.position = playerPosition
     }
    
     override func update(currentTime: CFTimeInterval) {
-        /* Called before each frame is rendered */
+        updateMoving()
     }
 
     // MARK: - Shoot 
@@ -223,8 +324,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         // calc random speed
         var enemyMoveDuration = NSTimeInterval(12.0 * (1.0 / (Double(level) + 2.0)))
 
-        if enemyMoveDuration < 2.0 {
-            enemyMoveDuration = 2.0
+        if enemyMoveDuration < 3.0 {
+            enemyMoveDuration = 3.0
         }
 
         // set actions
@@ -273,6 +374,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         collapse.setScale( random(min: 2, max: 3.5) )
         collapse.position  = enemy.position
         collapse.zPosition = enemy.zPosition + 1
+        collapse.zRotation = random(min: 0.0, max: 1.0) * CGFloat(2 * M_PI)
 
         addChild(collapse)
 
@@ -287,7 +389,19 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             ]))
 
         // update score
-        score += 10
+
+        if level > 5 {
+            score += 5
+        }
+        else if level > 10 {
+            score += 3
+        }
+        else if level > 20 {
+            score += 1
+        }
+        else {
+            score += 10
+        }
 
         // update level
         if score % 200 == 0 {
@@ -298,6 +412,44 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         // update UI
         scoreLabel.text = "Score: \(score)"
         levelLabel.text = "Level: \(level)"
+
+        scoreLabel.position = CGPoint(x: scoreLabel.frame.width/2 + 20, y: scoreLabel.position.y)
+        levelLabel.position = CGPoint(x: size.width - levelLabel.frame.width/2 - 20, y: levelLabel.position.y)
+    }
+
+    func enemy(enemy enemy: SKSpriteNode, didCollideWithHero hero: SKSpriteNode) {
+
+        let loseAction = SKAction.runBlock() {
+            let reveal = SKTransition.flipHorizontalWithDuration(0.5)
+            let gameOverScene = GameOverScene(size: self.size, score: self.score)
+            self.view?.presentScene(gameOverScene, transition: reveal)
+        }
+
+        let collapse = SKSpriteNode(texture: enemyExplosionAnimationTextures[0],
+            color: UIColor.clearColor(), size: enemy.size)
+
+        collapse.setScale( random(min: 4, max: 5) )
+        collapse.position  = playerShip.position
+        collapse.zPosition = max(playerShip.zPosition, enemy.zPosition) + 1
+        collapse.zRotation = random(min: 0.0, max: 1.0) * CGFloat(2 * M_PI)
+
+        addChild(collapse)
+
+        enemy.removeFromParent()
+
+        let animationAction = SKAction.animateWithTextures(enemyExplosionAnimationTextures,
+            timePerFrame: 0.058, resize: false, restore: true)
+
+        collapse.runAction(SKAction.sequence([
+            animationAction,
+            SKAction.removeFromParent()
+            ]))
+
+        runAction(SKAction.sequence([
+            SKAction.waitForDuration(2.0),
+            loseAction
+            ])
+        )
     }
 
     // MARK: SKPhysicsContactDelegate
@@ -352,8 +504,20 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         case .Hero where bCategory == .Enemy:
             print("hero & enemy")
 
+            if let aNode = contact.bodyA.node as? SKSpriteNode {
+                if let bNode = contact.bodyB.node as? SKSpriteNode {
+                    enemy(enemy: bNode, didCollideWithHero: aNode)
+                }
+            }
+
         case .Enemy where bCategory == .Hero:  // hero & enemy
             print("enemy & hero")
+
+            if let aNode = contact.bodyA.node as? SKSpriteNode {
+                if let bNode = contact.bodyB.node as? SKSpriteNode {
+                    enemy(enemy: aNode, didCollideWithHero: bNode)
+                }
+            }
 
         case .Enemy where bCategory == .Enemy: // enemy & enemy
             print("enemy & enemy")

@@ -17,6 +17,8 @@
 		BA320DB21C9F1C31003A9C1C /* PlayerAnimation.atlas in Resources */ = {isa = PBXBuildFile; fileRef = BA320DB11C9F1C31003A9C1C /* PlayerAnimation.atlas */; };
 		BA320DB41C9F216D003A9C1C /* EnemyAnimation.atlas in Resources */ = {isa = PBXBuildFile; fileRef = BA320DB31C9F216D003A9C1C /* EnemyAnimation.atlas */; };
 		BA320DB61C9F4CC7003A9C1C /* EnemyExplosionAnimation.atlas in Resources */ = {isa = PBXBuildFile; fileRef = BA320DB51C9F4CC7003A9C1C /* EnemyExplosionAnimation.atlas */; };
+		BA320DB81C9F6C39003A9C1C /* GameOverScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA320DB71C9F6C39003A9C1C /* GameOverScene.swift */; };
+		BA320DBA1C9F7029003A9C1C /* smash.m4a in Resources */ = {isa = PBXBuildFile; fileRef = BA320DB91C9F7029003A9C1C /* smash.m4a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -32,6 +34,8 @@
 		BA320DB11C9F1C31003A9C1C /* PlayerAnimation.atlas */ = {isa = PBXFileReference; lastKnownFileType = folder.skatlas; path = PlayerAnimation.atlas; sourceTree = "<group>"; };
 		BA320DB31C9F216D003A9C1C /* EnemyAnimation.atlas */ = {isa = PBXFileReference; lastKnownFileType = folder.skatlas; path = EnemyAnimation.atlas; sourceTree = "<group>"; };
 		BA320DB51C9F4CC7003A9C1C /* EnemyExplosionAnimation.atlas */ = {isa = PBXFileReference; lastKnownFileType = folder.skatlas; path = EnemyExplosionAnimation.atlas; sourceTree = "<group>"; };
+		BA320DB71C9F6C39003A9C1C /* GameOverScene.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GameOverScene.swift; sourceTree = "<group>"; };
+		BA320DB91C9F7029003A9C1C /* smash.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; path = smash.m4a; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -66,6 +70,7 @@
 			children = (
 				BA320D941C9F0059003A9C1C /* Utils.swift */,
 				BA320D821C9EE342003A9C1C /* GameScene.swift */,
+				BA320DB71C9F6C39003A9C1C /* GameOverScene.swift */,
 				BA320D841C9EE342003A9C1C /* GameViewController.swift */,
 				BA320D971C9F007D003A9C1C /* resources */,
 				BA320D961C9F0062003A9C1C /* supported files */,
@@ -76,6 +81,7 @@
 		BA320D961C9F0062003A9C1C /* supported files */ = {
 			isa = PBXGroup;
 			children = (
+				BA320DB91C9F7029003A9C1C /* smash.m4a */,
 				BA320D861C9EE342003A9C1C /* Main.storyboard */,
 				BA320D8B1C9EE342003A9C1C /* LaunchScreen.storyboard */,
 				BA320D7E1C9EE342003A9C1C /* AppDelegate.swift */,
@@ -155,6 +161,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				BA320D8D1C9EE342003A9C1C /* LaunchScreen.storyboard in Resources */,
+				BA320DBA1C9F7029003A9C1C /* smash.m4a in Resources */,
 				BA320DB21C9F1C31003A9C1C /* PlayerAnimation.atlas in Resources */,
 				BA320D8A1C9EE342003A9C1C /* Assets.xcassets in Resources */,
 				BA320DB61C9F4CC7003A9C1C /* EnemyExplosionAnimation.atlas in Resources */,
@@ -170,6 +177,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BA320DB81C9F6C39003A9C1C /* GameOverScene.swift in Sources */,
 				BA320D831C9EE342003A9C1C /* GameScene.swift in Sources */,
 				BA320D851C9EE342003A9C1C /* GameViewController.swift in Sources */,
 				BA320D7F1C9EE342003A9C1C /* AppDelegate.swift in Sources */,
@@ -323,6 +331,7 @@
 				BA320D931C9EE342003A9C1C /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
