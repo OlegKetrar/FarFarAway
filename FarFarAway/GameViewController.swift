@@ -9,13 +9,13 @@
 import UIKit
 import SpriteKit
 
-class GameViewController: UIViewController {
+final class GameViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
         let scene = GameScene(size: view.bounds.size)
-        scene.scaleMode = .ResizeFill
+        scene.scaleMode = .resizeFill
 
         let skView = view as! SKView
         skView.showsFPS = true
@@ -24,18 +24,15 @@ class GameViewController: UIViewController {
         skView.presentScene(scene)
     }
 
-    override func shouldAutorotate() -> Bool {
+    override var shouldAutorotate: Bool {
         return true
     }
 
-    override func supportedInterfaceOrientations() -> UIInterfaceOrientationMask {
-        return .Portrait
+    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
+        return .portrait
     }
 
-    override func prefersStatusBarHidden() -> Bool {
+    override var prefersStatusBarHidden: Bool {
         return true
     }
 }
-
-
-

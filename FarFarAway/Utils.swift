@@ -55,7 +55,3 @@ extension CGPoint {
         return self / length()
     }
 }
-
-
-
-

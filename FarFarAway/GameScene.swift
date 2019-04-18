@@ -8,9 +8,25 @@
 
 import SpriteKit
 
-class GameScene: SKScene, SKPhysicsContactDelegate {
+final class GameScene: SKScene, SKPhysicsContactDelegate {
 
-    // MARK: Init
+    let labelColor = UIColor.black
+    let enemyExplosionAnimationAtlas = SKTextureAtlas(named: "EnemyExplosionAnimation")
+    var enemyExplosionAnimationTextures: [SKTexture] = []
+
+    weak var scoreLabel: SKLabelNode!
+    weak var levelLabel: SKLabelNode!
+
+    weak var playerShip: SKSpriteNode!
+
+    var score: Int = 0
+    var level: Int = 1
+
+    var moveLeft:  Bool = false
+    var moveRight: Bool = false
+
+    var leftOff:  Bool = false
+    var rightOff: Bool = false
 
     override init(size: CGSize) {
         super.init(size: size)
@@ -22,12 +38,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
 
     // MARK: Lifecycle
 
-    let labelColor = UIColor.blackColor()
-
-    override func didMoveToView(view: SKView) {
+    override func didMove(to view: SKView) {
 
         // MARK: - setup UI
-        backgroundColor = UIColor.whiteColor()
+        backgroundColor = UIColor.white
 
         let someLabel = SKLabelNode(fontNamed: "Chalkduster")
         someLabel.text = "score: \(score)"
@@ -76,12 +90,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
 
         // create hero spaceship
         let hero = SKSpriteNode(texture: playerAnimationTextures[0],
-            color: UIColor.clearColor(), size: CGSize(width: 75, height: 75))
+            color: .clear, size: CGSize(width: 75, height: 75))
 
         hero.position = CGPoint(x: size.width / 2, y: hero.size.height / 2 + 20.0)
 
         hero.physicsBody = SKPhysicsBody(circleOfRadius: hero.size.width / 2)
-        hero.physicsBody?.dynamic = true
+        hero.physicsBody?.isDynamic = true
         hero.physicsBody?.categoryBitMask    = PhysicsCategory.Hero.rawValue
         hero.physicsBody?.contactTestBitMask = PhysicsCategory.Enemy.rawValue
         hero.physicsBody?.collisionBitMask   = PhysicsCategory.None.rawValue
@@ -91,8 +105,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         playerShip = hero
 
         // add hero animation action
-        playerShip.runAction(SKAction.repeatActionForever(
-            SKAction.animateWithTextures(playerAnimationTextures,
+        playerShip.run(SKAction.repeatForever(
+            SKAction.animate(with: playerAnimationTextures,
                 timePerFrame: 0.15,
                 resize: false,
                 restore: true)),
@@ -115,48 +129,32 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         physicsWorld.contactDelegate = self
 
         // create gun 
-        runAction(SKAction.repeatActionForever(
+        run(SKAction.repeatForever(
             SKAction.sequence([
-                SKAction.runBlock(actionShot),
-                SKAction.waitForDuration(0.1)
+                SKAction.run(actionShot),
+                SKAction.wait(forDuration: 0.1)
                 ])
             ))
     }
 
     func updateEnemyAction() {
 
-        let doubleLevel = NSTimeInterval(level)
+        let doubleLevel = TimeInterval(level)
         var duration = (0.1 * doubleLevel + 5.0) / (5 * doubleLevel)
 
         if duration < 0.1 {
             duration = 0.1
         }
 
-        runAction(SKAction.repeatActionForever(
+        run(SKAction.repeatForever(
             SKAction.sequence([
-                SKAction.runBlock(addEnemy),
-                SKAction.waitForDuration(duration)
+                SKAction.run(addEnemy),
+                SKAction.wait(forDuration: duration)
             ])),
             withKey: "createEnemy")
     }
 
-    // MARK: - 
-
-    weak var scoreLabel: SKLabelNode!
-    weak var levelLabel: SKLabelNode!
-
-    weak var playerShip: SKSpriteNode!
-
-    var score: Int = 0
-    var level: Int = 1
-
-    // MARK: Input
-
-    var moveLeft:  Bool = false
-    var moveRight: Bool = false
-
-    var leftOff:  Bool = false
-    var rightOff: Bool = false
+    // MARK: -
 
     var leftRect: CGRect {
         return CGRect(x: 0, y: 0, width: size.width/2 - 50, height: 100)
@@ -165,12 +163,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var rightRect: CGRect {
         return CGRect(x: size.width/2 + 50, y: 0, width: size.width/2 - 50, height: 100)
     }
-    
-    override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
+
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
 
         for touch in touches {
 
-            let location = touch.locationInNode(self)
+            let location = touch.location(in: self)
 
             if leftRect.contains(location) {
                 moveLeft = true
@@ -192,11 +190,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
     }
 
-    override func touchesEnded(touches: Set<UITouch>, withEvent event: UIEvent?) {
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
 
         for touch in touches {
 
-            let location = touch.locationInNode(self)
+            let location = touch.location(in: self)
 
             if leftRect.contains(location) {
                 moveLeft = false
@@ -252,7 +250,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         playerShip.position = playerPosition
     }
    
-    override func update(currentTime: CFTimeInterval) {
+    override func update(_ currentTime: CFTimeInterval) {
         updateMoving()
     }
 
@@ -270,9 +268,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         bullet.zPosition = playerShip.zPosition - 1
 
         // physics
-        bullet.physicsBody = SKPhysicsBody(rectangleOfSize: CGSize(width: bullet.size.width/3,
+        bullet.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: bullet.size.width/3,
             height: bullet.size.height/2))
-        bullet.physicsBody?.dynamic = true
+        bullet.physicsBody?.isDynamic = true
         bullet.physicsBody?.categoryBitMask    = PhysicsCategory.Bullet.rawValue
         bullet.physicsBody?.contactTestBitMask = PhysicsCategory.Enemy.rawValue
         bullet.physicsBody?.collisionBitMask   = PhysicsCategory.None.rawValue
@@ -280,10 +278,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
 
         addChild(bullet)
 
-        let actionMove     = SKAction.moveTo(endPosition, duration: 2.0)
+        let actionMove     = SKAction.move(to: endPosition, duration: 2.0)
         let actionMoveDone = SKAction.removeFromParent()
 
-        bullet.runAction(SKAction.sequence([actionMove, actionMoveDone]))
+        bullet.run(SKAction.sequence([actionMove, actionMoveDone]))
     }
 
     // MARK: - Add enemies
@@ -295,19 +293,19 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
 
         // create
         let enemySize = CGSize(width: 40, height: 40)
-        let enemy = SKSpriteNode(texture: enemyAnimationTextures[0], color: UIColor.clearColor(), size: enemySize)
+        let enemy = SKSpriteNode(texture: enemyAnimationTextures[0], color: .clear, size: enemySize)
 
-        enemy.zRotation = CGFloat(M_PI)
+        enemy.zRotation = .pi
 
         enemy.physicsBody = SKPhysicsBody(circleOfRadius: enemySize.width / 2)
-        enemy.physicsBody?.dynamic = true
+        enemy.physicsBody?.isDynamic = true
         enemy.physicsBody?.categoryBitMask    = PhysicsCategory.Enemy.rawValue
         enemy.physicsBody?.contactTestBitMask = PhysicsCategory.Bullet.rawValue | PhysicsCategory.Hero.rawValue
         enemy.physicsBody?.collisionBitMask   = PhysicsCategory.None.rawValue
 
         // enemy animation action
-        let animationAction = SKAction.animateWithTextures(enemyAnimationTextures, timePerFrame: 0.08, resize: false, restore: true)
-        enemy.runAction(SKAction.repeatActionForever(animationAction))
+        let animationAction = SKAction.animate(with: enemyAnimationTextures, timePerFrame: 0.08, resize: false, restore: true)
+        enemy.run(SKAction.repeatForever(animationAction))
 
         // calc random position
         let startX = random(min: enemy.size.width / 2,
@@ -322,28 +320,28 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         addChild(enemy)
 
         // calc random speed
-        var enemyMoveDuration = NSTimeInterval(12.0 * (1.0 / (Double(level) + 2.0)))
+        var enemyMoveDuration = TimeInterval(12.0 * (1.0 / (Double(level) + 2.0)))
 
         if enemyMoveDuration < 3.0 {
             enemyMoveDuration = 3.0
         }
 
         // set actions
-        let actionMove = SKAction.moveTo(CGPoint(x: endX, y: -enemy.size.height / 2),
+        let actionMove = SKAction.move(to: CGPoint(x: endX, y: -enemy.size.height / 2),
             duration: enemyMoveDuration )
 
         let actionMoveDone = SKAction.removeFromParent()
 
-        enemy.runAction(SKAction.sequence([
-            actionMove,
-            actionMoveDone
-            ])
-        )
+        enemy.run(
+            SKAction.sequence([
+                actionMove,
+                actionMoveDone
+            ]))
     }
 
     // MARK: Random generator
 
-    func random(min min: CGFloat, max: CGFloat) -> CGFloat {
+    func random(min: CGFloat, max: CGFloat) -> CGFloat {
         return random() * (max - min) + min
     }
 
@@ -352,9 +350,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
 
     // MARK: - Collision detection 
-
-    let enemyExplosionAnimationAtlas = SKTextureAtlas(named: "EnemyExplosionAnimation")
-    var enemyExplosionAnimationTextures: [SKTexture] = []
 
     func bulletDidCollideWithEnemy(bullet: SKSpriteNode, enemy: SKSpriteNode) {
 
@@ -368,25 +363,27 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         bullet.removeFromParent()
 
         // 3 
-        let collapse = SKSpriteNode(texture: enemyExplosionAnimationTextures[0],
-            color: UIColor.clearColor(), size: enemy.size)
+        let collapse = SKSpriteNode(
+            texture: enemyExplosionAnimationTextures[0],
+            color: .clear,
+            size: enemy.size)
 
         collapse.setScale( random(min: 2, max: 3.5) )
         collapse.position  = enemy.position
         collapse.zPosition = enemy.zPosition + 1
-        collapse.zRotation = random(min: 0.0, max: 1.0) * CGFloat(2 * M_PI)
+        collapse.zRotation = random(min: 0.0, max: 1.0) * CGFloat(2 * CGFloat.pi)
 
         addChild(collapse)
 
         enemy.removeFromParent()
 
-        let animationAction = SKAction.animateWithTextures(enemyExplosionAnimationTextures,
+        let animationAction = SKAction.animate(with: enemyExplosionAnimationTextures,
             timePerFrame: 0.058, resize: false, restore: true)
 
-        collapse.runAction(SKAction.sequence([
+        collapse.run(SKAction.sequence([
             animationAction,
             SKAction.removeFromParent()
-            ]))
+        ]))
 
         // update score
 
@@ -417,36 +414,38 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         levelLabel.position = CGPoint(x: size.width - levelLabel.frame.width/2 - 20, y: levelLabel.position.y)
     }
 
-    func enemy(enemy enemy: SKSpriteNode, didCollideWithHero hero: SKSpriteNode) {
+    func enemy(enemy: SKSpriteNode, didCollideWithHero hero: SKSpriteNode) {
 
-        let loseAction = SKAction.runBlock() {
-            let reveal = SKTransition.flipHorizontalWithDuration(0.5)
+        let loseAction = SKAction.run {
+            let reveal = SKTransition.flipHorizontal(withDuration: 0.5)
             let gameOverScene = GameOverScene(size: self.size, score: self.score)
             self.view?.presentScene(gameOverScene, transition: reveal)
         }
 
-        let collapse = SKSpriteNode(texture: enemyExplosionAnimationTextures[0],
-            color: UIColor.clearColor(), size: enemy.size)
+        let collapse = SKSpriteNode(
+            texture: enemyExplosionAnimationTextures[0],
+            color: .clear,
+            size: enemy.size)
 
         collapse.setScale( random(min: 4, max: 5) )
         collapse.position  = playerShip.position
         collapse.zPosition = max(playerShip.zPosition, enemy.zPosition) + 1
-        collapse.zRotation = random(min: 0.0, max: 1.0) * CGFloat(2 * M_PI)
+        collapse.zRotation = random(min: 0.0, max: 1.0) * CGFloat(2 * CGFloat.pi)
 
         addChild(collapse)
 
         enemy.removeFromParent()
 
-        let animationAction = SKAction.animateWithTextures(enemyExplosionAnimationTextures,
+        let animationAction = SKAction.animate(with: enemyExplosionAnimationTextures,
             timePerFrame: 0.058, resize: false, restore: true)
 
-        collapse.runAction(SKAction.sequence([
+        collapse.run(SKAction.sequence([
             animationAction,
             SKAction.removeFromParent()
             ]))
 
-        runAction(SKAction.sequence([
-            SKAction.waitForDuration(2.0),
+        run(SKAction.sequence([
+            SKAction.wait(forDuration: 2.0),
             loseAction
             ])
         )
@@ -481,7 +480,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             if let aNode = contact.bodyA.node as? SKSpriteNode {
 
                 if let bNode = contact.bodyB.node as? SKSpriteNode {
-                    bulletDidCollideWithEnemy(aNode, enemy: bNode)
+                    bulletDidCollideWithEnemy(bullet: aNode, enemy: bNode)
                 }
             }
 
@@ -491,7 +490,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             if let aNode = contact.bodyA.node as? SKSpriteNode {
 
                 if let bNode = contact.bodyB.node as? SKSpriteNode {
-                    bulletDidCollideWithEnemy(bNode, enemy: aNode)
+                    bulletDidCollideWithEnemy(bullet: bNode, enemy: aNode)
                 }
             }
 
@@ -531,17 +530,3 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
 
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
